@@ -24,6 +24,7 @@ std_sam = sqrt(var_sam)
 
 s = seq(0,12)
 post_joe = pdiscp(p, prior_joe, 12, s)
-
-
+plot(s, post_joe,  'l')
+post_sam = pbetap(c(alpha, beta), 12, s)
+lines(s, post_sam)
 #####################
