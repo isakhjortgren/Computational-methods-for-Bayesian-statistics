@@ -61,18 +61,26 @@ cred_interval = c(x_arr[i_start-i_diff], x_arr[i_start+i_diff])
 #plot analythical expr:
 post_analytical = 0
 prior_pred_x = 0
+list_std_upd = rep(0, 3)
+list_mu_upd = rep(0, 3)
+list_weight_upd = rep(0, 3)
 for (i in 1:length(mu_vals)){
   i_mu = mu_vals[i]
   i_std = sqrt(var_vals[i])
   i_weight = weights[i]
   i_std_upd = (1/i_std^2 + 1/std_likelihood^2)^(-1/2)
+  list_std_upd[i] = i_std_upd
   i_mu_upd = i_std_upd^2 * (i_mu/i_std^2 + x/std_likelihood^2)
+  list_mu_upd[i] = i_mu_upd
   
   prior_pred_x_i = i_weight*dnorm(x, i_mu, sqrt(i_std^2 + std_likelihood^2))
+  list_weight_upd[i] = prior_pred_x_i
   prior_pred_x = prior_pred_x + prior_pred_x_i
-  post_analytical = post_analytical +  prior_pred_x_i * dnorm(theta, i_mu_upd, i_std_upd)
+  #post_analytical = post_analytical +  prior_pred_x_i * dnorm(theta, i_mu_upd, i_std_upd)
 }
-post_analytical = post_analytical/prior_pred_x
+list_weight_upd = list_weight_upd/prior_pred_x
+#post_analytical = post_analytical/prior_pred_x
+post_analytical = MixtureDistribution(theta, list_mu_upd, list_std_upd^2, list_weight_upd)
 lines(theta, post_analytical, 'l', ylab='Posterior density funtion')
 
 
