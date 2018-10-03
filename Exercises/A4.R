@@ -27,9 +27,56 @@ n = length(vals)
 sigma2 = S/rchisq(1000, n - 1)
 mu = rnorm(1000, mean = mean(vals), sd = sqrt(sigma2)/sqrt(n))
 points(mu, sigma2)
-# ??????
+# c
+n_grid_points = 11
+mu_list = seq(7,14, length.out = n_grid_points)
+mu_grid = matrix(rep(mu_list, n_grid_points), c(n_grid_points,n_grid_points))
+var_list = seq(0.01, 15, length.out = n_grid_points)
+var_grid = t(matrix(rep(var_list, n_grid_points), c(n_grid_points,n_grid_points)))
 
 
+tot_likelihood = 1
+for (i in 1:length(vals)){
+  i_val = vals[i]
+  i_likelihood = pnorm(i_val+0.5, mu_grid, sqrt(var_grid)) - pnorm(i_val-0.5, mu_grid, sqrt(var_grid))
+  tot_likelihood = tot_likelihood * i_likelihood
+}
+posterior = tot_likelihood / var_grid
+library(plot3D)
+surf3D(mu_grid, var_grid, posterior)
+
+# generate data points with metropolis hasting mcmc
+
+posterior_func = function(mu, variance){
+  tot_likelihood = 1
+  for (i in 1:length(vals)){
+    i_val = vals[i]
+    i_likelihood = pnorm(i_val+0.5, mu, sqrt(variance)) - pnorm(i_val-0.5, mu, sqrt(variance))
+    tot_likelihood = tot_likelihood * i_likelihood
+  }
+  posterior = tot_likelihood / variance
+}
+
+nbr_samples = 10000
+gen_sample = t(matrix(rep(c(11,2),nbr_samples), c(2, nbr_samples)))
+
+for (i in 2:nbr_samples){
+  prev_mu = gen_sample[i-1, 1]
+  prev_var = gen_sample[i-1, 2]
+  prop_mu = rnorm(1, prev_mu, 0.5)
+  prop_var = abs(rnorm(1, prev_var, 0.5))
+  
+  accept = posterior_func(prop_mu, prop_var)/posterior_func(prev_mu, prev_var)
+  u = runif(1)
+  if (u < accept){
+    gen_sample[i,1] = prop_mu
+    gen_sample[i,2] = prop_var
+  } else {
+    gen_sample[i,1] = prev_mu
+    gen_sample[i,2] = prev_var
+  }
+}
+plot(gen_sample[,1], gen_sample[,2])
 
 
 #### 4.7
