@@ -65,3 +65,5 @@ points(0:9, y)
 
 plot(0:9, log10(ns_counts), col='red', ylab = 'log10(counts)', xlab='notices')
 points(0:9, log10(y))
+
+1+1
